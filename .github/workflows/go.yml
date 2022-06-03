@@ -8,10 +8,6 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        GOOS: [windows, linux, darwin]
-        GOARCH: [arm64, amd64]
     steps:
     - uses: actions/checkout@v3
       with:
@@ -31,15 +27,22 @@ jobs:
 
     - name: Build
       run: |
-        mkdir -p ${{ matrix.GOOS }}/${{ matrix.GOARCH }}
-        CGO_ENABLED=0 GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }} go build -ldflags "-X main.mainver=$NBGV_SimpleVersion" -v ./... -o ${{ matrix.GOOS }}/${{ matrix.GOARCH }}/FabricPing
-        cd ${{ matrix.GOOS }}/${{ matrix.GOARCH }}
-        tar czf FabricPing_${{ matrix.GOOS }}_${{ matrix.GOARCH }}.tar.gz *
+        for GOOS in "windows" "linux" "darwin"
+        do
+            for GOARCH in "amd64" "arm64"
+            do
+                CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build
+                if [ $GOOS == "windows" ]
+                then
+                    zip FabricPing_${GOOS}_${GOARCH}.zip FabricPing.exe
+                else
+                    tar czf FabricPing_${GOOS}_${GOARCH}.tar.gz FabricPing
+                fi
+            done
+        done
         
     - name: Upload
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}       
       run: |
-        mkdir release
-        find . -name *.tar.gz -exec mv {} release/ \;
-        gh release create v$NBGV_SimpleVersion release/*
+        gh release create v$NBGV_SimpleVersion *.tar.gz *.zip
