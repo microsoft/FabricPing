@@ -10,7 +10,7 @@ Network debugging tools for [Service Fabric](https://azure.microsoft.com/en-us/s
  * powershell
 
     ```
-    Invoke-WebRequest -OutFile 'FabricPing_windows_amd64.zip' -Uri 'https://github.com/tg123/FabricPing/releases/latest/download/FabricPing_windows_amd64.zip' -UseBasicParsing
+    Invoke-WebRequest -OutFile 'FabricPing_windows_amd64.zip' -Uri 'https://github.com/microsoft/FabricPing/releases/latest/download/FabricPing_windows_amd64.zip' -UseBasicParsing
 
     Expand-Archive ./FabricPing_windows_amd64.zip -DestinationPath .
     ```
@@ -19,14 +19,14 @@ Network debugging tools for [Service Fabric](https://azure.microsoft.com/en-us/s
  * using [built in curl](https://docs.microsoft.com/en-us/virtualization/community/team-blog/2017/20171219-tar-and-curl-come-to-windows) in case of `Invoke-WebRequest` not working on Windows Server Core
 
     ```
-    curl.exe -L https://github.com/tg123/FabricPing/releases/latest/download/FabricPing_windows_amd64.zip -o FabricPing_windows_amd64.zip
+    curl.exe -L https://github.com/microsoft/FabricPing/releases/latest/download/FabricPing_windows_amd64.zip -o FabricPing_windows_amd64.zip
     ```
  
 
 ### Linux
 
 ```
-curl -L https://github.com/tg123/FabricPing/releases/latest/download/FabricPing_linux_amd64.tar.gz | tar xz
+curl -L https://github.com/microsoft/FabricPing/releases/latest/download/FabricPing_linux_amd64.tar.gz | tar xz
 ```
 
 ## Usage
