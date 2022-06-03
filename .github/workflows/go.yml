@@ -31,7 +31,7 @@ jobs:
         do
             for GOARCH in "amd64" "arm64"
             do
-                CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build
+                CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH go build -ldflags "-X main.mainver=$NBGV_SimpleVersion"
                 if [ $GOOS == "windows" ]
                 then
                     zip FabricPing_${GOOS}_${GOARCH}.zip FabricPing.exe
