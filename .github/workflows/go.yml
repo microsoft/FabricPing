@@ -7,12 +7,13 @@ on:
 jobs:
 
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        GOOS: [windows, linux, darwin]
+        GOARCH: [arm64, amd64]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         
@@ -28,57 +29,17 @@ jobs:
 #     - name: Test
 #       run: go test -v ./...        
 
-    - name: Build Linux
-      if: runner.os != 'Windows'
+    - name: Build
       run: |
-        CGO_ENABLED=0 go build -ldflags "-X main.mainver=$NBGV_SimpleVersion" -v ./...
-
-    - name: Pack Linux
-      if: runner.os != 'Windows'
-      run: |
-        tar czf FabricPing_linux_x64.tar.gz FabricPing
-
-    - name: Upload a Build Artifact
-      if: runner.os != 'Windows'
-      uses: actions/upload-artifact@v2
-      with:
-        path: FabricPing_linux_x64.tar.gz
-
-    - name: Build Linux
-      if: runner.os == 'Windows'
-      run: |
-        go build -ldflags "-X main.mainver=$env:NBGV_SimpleVersion" -v ./...
-
-    - name: Pack Windows
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        Compress-Archive .\FabricPing.exe .\FabricPing_win_x64.zip
-
-    - name: Upload a Build Artifact
-      if: runner.os == 'Windows'
-      uses: actions/upload-artifact@v2
-      with:
-        path: FabricPing_win_x64.zip
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    
-    - name: Download Artifacts
-      uses: actions/download-artifact@v2
-      
-    - uses: dotnet/nbgv@master
-      with:
-        setAllVars: true
-
-    - name: Release
+        mkdir -p ${{ matrix.GOOS }}/${{ matrix.GOARCH }}
+        CGO_ENABLED=0 GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }} go build -ldflags "-X main.mainver=$NBGV_SimpleVersion" -v ./... -o ${{ matrix.GOOS }}/${{ matrix.GOARCH }}/FabricPing
+        cd ${{ matrix.GOOS }}/${{ matrix.GOARCH }}
+        tar czf FabricPing_${{ matrix.GOOS }}_${{ matrix.GOARCH }}.tar.gz *
+        
+    - name: Upload
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}    
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}       
       run: |
-        gh release create v$NBGV_SimpleVersion artifact/*
-    
+        mkdir release
+        find . -name *.tar.gz -exec mv {} release/ \;
+        gh release create v$NBGV_SimpleVersion release/*
